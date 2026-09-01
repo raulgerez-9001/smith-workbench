@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smith · Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◈</span>
+    <div class="brand-text">
+      <span class="brand-title">SMITH</span>
+      <span class="brand-sub">Workbench — corre 100% en tu navegador</span>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="backtest">Backtest</button>
+    <button class="tab-btn" data-tab="strategies">Estrategias</button>
+    <button class="tab-btn" data-tab="backtests">Backtests guardados</button>
+    <button class="tab-btn" data-tab="data">Datos</button>
+    <button class="tab-btn" data-tab="live">Operar</button>
+  </nav>
+</header>
+
+<!-- ================= TAB: BACKTEST ================= -->
+<main class="tab-panel" id="tab-backtest">
+  <div class="layout">
+    <aside class="panel params-panel">
+      <h2 class="panel-title">Parametros</h2>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="bb_enabled" checked> Bandas de Bollinger</label></h3>
+        <div class="field-row"><label>Periodo</label><input type="number" id="bb_period" value="20" min="2"></div>
+        <div class="field-row"><label>Desviaciones (σ)</label><input type="number" id="bb_std" value="2.0" step="0.1" min="0.1"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="rsi_enabled"> RSI</label></h3>
+        <div class="field-row"><label>Periodo</label><input type="number" id="rsi_period" value="14" min="1"></div>
+        <div class="field-row"><label>Sobreventa &lt;</label><input type="number" id="rsi_oversold" value="30" min="0" max="100"></div>
+        <div class="field-row"><label>Sobrecompra &gt;</label><input type="number" id="rsi_overbought" value="70" min="0" max="100"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="cci_enabled"> CCI</label></h3>
+        <div class="field-row"><label>Periodo</label><input type="number" id="cci_period" value="20" min="1"></div>
+        <div class="field-row"><label>Sobreventa &lt;</label><input type="number" id="cci_oversold" value="-100" step="10"></div>
+        <div class="field-row"><label>Sobrecompra &gt;</label><input type="number" id="cci_overbought" value="100" step="10"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="stoch_enabled" checked> Estocastico</label></h3>
+        <div class="field-row"><label>%K</label><input type="number" id="stoch_k" value="14" min="1"></div>
+        <div class="field-row"><label>%D</label><input type="number" id="stoch_d" value="3" min="1"></div>
+        <div class="field-row"><label>Suavizado</label><input type="number" id="stoch_smooth" value="3" min="1"></div>
+        <div class="field-row"><label>Sobreventa &lt;</label><input type="number" id="stoch_oversold" value="20" min="0" max="100"></div>
+        <div class="field-row"><label>Sobrecompra &gt;</label><input type="number" id="stoch_overbought" value="80" min="0" max="100"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="ma_enabled" checked> Media movil</label></h3>
+        <div class="field-row"><label>Tipo</label>
+          <select id="ma_type"><option value="ema">EMA</option><option value="sma">SMA</option></select>
+        </div>
+        <div class="field-row"><label>Periodo</label><input type="number" id="ma_period" value="8" min="1"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title">Confirmacion &amp; salida</h3>
+        <div class="field-row"><label>Ventana confirmacion (velas)</label><input type="number" id="confirm_window" value="3" min="1"></div>
+        <div class="field-row"><label>Vencimiento (velas)</label><input type="number" id="expiry_candles" value="3" min="1"></div>
+        <p class="module-hint" id="expiryHint"></p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title">Horario habilitado</h3>
+        <div class="schedule-days">
+          <label><input type="checkbox" class="sched-day" value="0" checked> L</label>
+          <label><input type="checkbox" class="sched-day" value="1" checked> M</label>
+          <label><input type="checkbox" class="sched-day" value="2" checked> X</label>
+          <label><input type="checkbox" class="sched-day" value="3" checked> J</label>
+          <label><input type="checkbox" class="sched-day" value="4" checked> V</label>
+          <label><input type="checkbox" class="sched-day" value="5" checked> S</label>
+          <label><input type="checkbox" class="sched-day" value="6" checked> D</label>
+        </div>
+        <div class="field-row"><label>Desde</label><input type="time" id="schedule_start" value="00:00"></div>
+        <div class="field-row"><label>Hasta</label><input type="time" id="schedule_end" value="23:59"></div>
+        <p class="module-hint">Las señales fuera de estos días/horario no se toman en cuenta — ni en el backtest ni en la operativa en vivo.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title">Gestion de capital</h3>
+        <div class="field-row"><label>Capital inicial</label><input type="number" id="initial_capital" value="1000" min="1"></div>
+        <div class="field-row"><label>Modo de stake</label>
+          <select id="stake_mode"><option value="percent">% del capital</option><option value="fixed">Monto fijo</option></select>
+        </div>
+        <div class="field-row"><label>Valor de stake</label><input type="number" id="stake_value" value="2" step="0.1" min="0.01"></div>
+        <div class="field-row"><label>Payout</label><input type="number" id="payout" value="0.85" step="0.01" min="0.01" max="1"></div>
+        <div class="field-row field-row-checkbox"><label>Martingala</label><input type="checkbox" id="martingale"></div>
+        <div class="field-row martingale-sub"><label>Multiplicador</label><input type="number" id="martingale_multiplier" value="2.0" step="0.1" min="1"></div>
+        <div class="field-row martingale-sub"><label>Pasos maximos</label><input type="number" id="martingale_max_steps" value="2" min="1"></div>
+        <div class="field-row"><label>Perdida diaria max (%)</label><input type="number" id="max_daily_loss_pct" value="20" min="1" max="100"></div>
+      </section>
+    </aside>
+
+    <section class="panel results-panel">
+      <div class="results-header">
+        <h2 class="panel-title" style="border:none;margin:0;padding:0;">Resultados</h2>
+        <div class="pair-controls">
+          <select id="pairSelect"></select>
+          <button id="runBtn" class="btn btn-primary"><span class="btn-icon">▶</span> Correr backtest</button>
+        </div>
+      </div>
+
+      <div id="resultsEmpty" class="empty-state">
+        <p>Todavia no corriste ningun backtest.</p>
+        <p class="muted">Andá a la pestaña <strong>Datos</strong> para cargar velas de un par, ajustá los parámetros de la izquierda y presioná <strong>Correr backtest</strong>.</p>
+      </div>
+
+      <div id="resultsContent" class="hidden">
+        <div class="metrics-grid" id="metricsGrid"></div>
+        <div class="chart-wrap"><div class="chart-scan"></div><canvas id="equityChart" height="110"></canvas></div>
+
+        <div class="save-row">
+          <input type="text" id="strategyName" placeholder="Nombre de la estrategia (ej: Smith agresiva)">
+          <button id="saveStrategyBtn" class="btn btn-ghost">Guardar estrategia</button>
+          <input type="text" id="backtestName" placeholder="Nombre de este backtest (ej: EURUSD 1m v3)">
+          <button id="saveBacktestBtn" class="btn btn-accent">Guardar backtest</button>
+        </div>
+
+        <details class="trades-details">
+          <summary>Ver operaciones (<span id="tradesCount">0</span>)</summary>
+          <div class="table-scroll">
+            <table id="tradesTable">
+              <thead><tr><th>#</th><th>Entrada</th><th>Dir.</th><th>Precio in</th><th>Precio out</th><th>Stake</th><th>Result.</th><th>PnL</th><th>Capital</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ================= TAB: ESTRATEGIAS ================= -->
+<main class="tab-panel hidden" id="tab-strategies">
+  <div class="library-layout">
+    <h2 class="panel-title">Estrategias guardadas</h2>
+    <p class="muted">Cada estrategia guarda los indicadores tildados, sus parámetros y la gestión de capital — sin atarse a un par ni a un resultado. Reutilizala en distintos backtests, y más adelante en la operativa en vivo.</p>
+    <div id="strategiesList" class="cards-grid"></div>
+  </div>
+</main>
+
+<!-- ================= TAB: BACKTESTS GUARDADOS ================= -->
+<main class="tab-panel hidden" id="tab-backtests">
+  <div class="library-layout">
+    <h2 class="panel-title">Backtests guardados</h2>
+    <p class="muted">Cada backtest guardado conserva su estrategia, el par/temporalidad usado, los resultados y la curva de capital completa — con su propio ID para comparar entre corridas.</p>
+    <div id="backtestsList" class="cards-grid"></div>
+  </div>
+</main>
+
+<!-- ================= TAB: DATOS ================= -->
+<main class="tab-panel hidden" id="tab-data">
+  <div class="library-layout">
+    <h2 class="panel-title">Datos historicos</h2>
+
+    <details class="settings-details">
+      <summary>⚙ Configuración del servidor</summary>
+      <div class="upload-box" style="margin-top:10px;">
+        <div class="field-row"><label>URL del servidor</label><input type="text" id="backendUrlInput" placeholder="https://tu-dominio.com"></div>
+        <div class="field-row"><label>Token (X-API-Key)</label><input type="password" id="backendTokenInput" placeholder="tu-token-secreto"></div>
+        <button id="saveBackendCfgBtn" class="btn btn-ghost">Guardar</button>
+        <span id="backendStatus" class="pair-meta"></span>
+      </div>
+    </details>
+
+    <h3 class="module-title" style="margin-top:20px;">Pedir datos a IQ Option</h3>
+    <p class="muted small">Se conecta a tu servidor en la nube (configuralo arriba), que a su vez habla con IQ Option. Tu usuario y contraseña se mandan directo al servidor, no quedan guardados en el navegador.</p>
+    <div class="upload-box">
+      <div class="field-row"><label>Usuario IQ Option</label><input type="text" id="iqEmailInput" placeholder="tu@email.com"></div>
+      <div class="field-row"><label>Contraseña</label><input type="password" id="iqPasswordInput"></div>
+      <div class="field-row"><label>Pares (separados por coma)</label><input type="text" id="iqPairsInput" placeholder="EURUSD, GBPUSD, USDJPY" style="width:260px;"></div>
+      <div class="field-row"><label>Temporalidad</label>
+        <select id="iqTimeframeInput">
+          <option value="1m">1 min</option><option value="5m">5 min</option><option value="15m">15 min</option>
+          <option value="30m">30 min</option><option value="1h">1 hora</option><option value="4h">4 horas</option><option value="1d">1 dia</option>
+        </select>
+      </div>
+      <div class="field-row"><label>Cantidad de velas</label><input type="number" id="iqCandlesInput" value="5000" min="1" max="200000"></div>
+      <div class="field-row"><label>Fecha fin (opcional)</label><input type="datetime-local" id="iqEndInput"></div>
+      <button id="iqFetchBtn" class="btn btn-accent">Pedir a IQ Option</button>
+    </div>
+
+    <div id="fetchProgress" class="hidden" style="margin-top:14px;"></div>
+
+    <div class="upload-box" style="margin-top:20px;">
+      <div class="field-row"><label>Par</label><input type="text" id="dataPairInput" placeholder="EURUSD"></div>
+      <div class="field-row"><label>Temporalidad</label>
+        <select id="dataTimeframeInput">
+          <option value="1m">1 min</option><option value="5m">5 min</option><option value="15m">15 min</option>
+          <option value="30m">30 min</option><option value="1h">1 hora</option><option value="4h">4 horas</option><option value="1d">1 dia</option>
+        </select>
+      </div>
+      <div class="field-row"><label>Archivo CSV</label><input type="file" id="dataFileInput" accept=".csv"></div>
+      <button id="dataUploadBtn" class="btn btn-ghost">Cargar CSV manual</button>
+    </div>
+
+    <h3 class="module-title" style="margin-top:24px;">Cargados en este dispositivo</h3>
+    <div id="datasetsList" class="cards-grid"></div>
+
+    <h3 class="module-title" style="margin-top:24px;">Disponibles en el servidor</h3>
+    <p class="muted small">Datos que ya se descargaron desde cualquier dispositivo — importalos acá sin volver a pedirlos a IQ Option.</p>
+    <div id="serverDatasetsList" class="cards-grid"></div>
+  </div>
+</main>
+
+<!-- ================= TAB: OPERAR (placeholder) ================= -->
+<main class="tab-panel hidden" id="tab-live">
+  <div class="library-layout">
+    <h2 class="panel-title">Operativa automática</h2>
+    <p class="muted small">Elegí una estrategia guardada, el par/temporalidad, y el modo. La sesión corre en el servidor — podés cerrar esta pestaña y va a seguir corriendo; volvé después y reconectate.</p>
+
+    <div class="upload-box">
+      <div class="field-row"><label>Estrategia</label><select id="liveStrategySelect" style="width:220px;"></select></div>
+      <div class="field-row"><label>Par</label><input type="text" id="livePairInput" placeholder="EURUSD" style="width:120px;"></div>
+      <div class="field-row"><label>Temporalidad</label>
+        <select id="liveTimeframeInput">
+          <option value="1m">1 min</option><option value="5m">5 min</option><option value="15m">15 min</option>
+          <option value="30m">30 min</option><option value="1h">1 hora</option><option value="4h">4 horas</option><option value="1d">1 dia</option>
+        </select>
+      </div>
+      <div class="field-row"><label>Modo</label>
+        <select id="liveModeSelect">
+          <option value="simulate">Simulado (con datos ya descargados)</option>
+          <option value="practice">Demo (IQ Option PRACTICE)</option>
+          <option value="real">Cuenta REAL</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="upload-box" id="liveCredsBox" style="margin-top:10px;">
+      <div class="field-row"><label>Usuario IQ Option</label><input type="text" id="liveEmailInput" placeholder="tu@email.com"></div>
+      <div class="field-row"><label>Contraseña</label><input type="password" id="livePasswordInput"></div>
+      <div class="field-row field-row-checkbox"><label>Dry-run (solo avisar, no ejecutar)</label><input type="checkbox" id="liveDryRunInput" checked></div>
+    </div>
+
+    <div class="upload-box danger-box hidden" id="liveRealBox" style="margin-top:10px;">
+      <p class="muted small" style="color:var(--put);margin:0 0 8px;">⚠ Vas a operar con CUENTA REAL. Escribí exactamente <code>ACEPTO-EL-RIESGO</code> para habilitar el botón.</p>
+      <div class="field-row"><label>Confirmación</label><input type="text" id="liveConfirmRealInput" placeholder="ACEPTO-EL-RIESGO" style="width:220px;"></div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <button id="liveStartBtn" class="btn btn-accent">▶ Iniciar sesión</button>
+      <button id="liveStopBtn" class="btn btn-ghost hidden">■ Detener</button>
+    </div>
+
+    <div id="liveStatusPanel" class="hidden" style="margin-top:18px;">
+      <div class="metrics-grid" id="liveMetricsGrid"></div>
+      <h3 class="module-title" style="margin-top:16px;">Log en vivo</h3>
+      <div class="live-log" id="liveLog"></div>
+    </div>
+
+    <h3 class="module-title" style="margin-top:24px;">Sesiones</h3>
+    <div id="liveSessionsList" class="cards-grid"></div>
+  </div>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/vendor/chart.umd.js"></script>
+<script src="js/db.js"></script>
+<script src="js/backtest-engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
