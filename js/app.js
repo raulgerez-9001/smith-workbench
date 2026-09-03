@@ -22,7 +22,7 @@ const STRATEGY_FIELDS = [
   "confirm_window",
 ];
 const TOGGLE_MODULES = ["bb_enabled", "rsi_enabled", "cci_enabled", "stoch_enabled", "ma_enabled"];
-const MONEY_FIELDS = ["initial_capital", "stake_mode", "stake_value", "payout", "martingale", "martingale_multiplier", "martingale_max_steps", "max_daily_loss_pct"];
+const MONEY_FIELDS = ["initial_capital", "stake_mode", "stake_value", "payout", "martingale", "martingale_multiplier", "martingale_max_steps", "max_daily_loss_pct", "random_delay_enabled", "random_delay_min_sec", "random_delay_max_sec"];
 
 // ---------------- utilidades ----------------
 
@@ -118,6 +118,7 @@ function syncModuleToggles() {
     module.querySelectorAll("input:not([type=checkbox]), select").forEach((el) => (el.disabled = !on));
   }
   syncMartingaleVisibility();
+  syncDelayVisibility();
   updateExpiryHint();
 }
 TOGGLE_MODULES.forEach((id) => $(id).addEventListener("change", syncModuleToggles));
@@ -130,6 +131,15 @@ function syncMartingaleVisibility() {
   });
 }
 $("martingale").addEventListener("change", syncMartingaleVisibility);
+
+function syncDelayVisibility() {
+  const on = $("random_delay_enabled").checked;
+  document.querySelectorAll(".delay-sub").forEach((el) => {
+    el.style.opacity = on ? "1" : "0.35";
+    el.querySelectorAll("input").forEach((i) => (i.disabled = !on));
+  });
+}
+$("random_delay_enabled").addEventListener("change", syncDelayVisibility);
 
 function updateExpiryHint() {
   const sec = currentPairId ? TIMEFRAME_SECONDS[currentPairId.split("::")[1]] : 60;
@@ -794,12 +804,35 @@ async function pollLiveStatus() {
 }
 
 function renderLiveStatus(s) {
+  const sum = s.summary || {};
   $("liveMetricsGrid").innerHTML = `
     <div class="metric-card"><div class="metric-label">Estado</div><div class="metric-value"><span class="session-status ${s.status}">${s.status}</span></div></div>
     <div class="metric-card"><div class="metric-label">Capital</div><div class="metric-value">${s.capital !== null ? fmt(s.capital) : "—"}</div></div>
     <div class="metric-card"><div class="metric-label">Operaciones</div><div class="metric-value">${s.trades_count}</div></div>
     <div class="metric-card"><div class="metric-label">Modo</div><div class="metric-value" style="font-size:13px;">${s.mode}${s.dry_run ? " (dry-run)" : ""}</div></div>
+    <div class="metric-card"><div class="metric-label">Winrate</div><div class="metric-value">${sum.trades ? sum.winrate_pct + "%" : "—"}</div></div>
+    <div class="metric-card"><div class="metric-label">PnL neto</div><div class="metric-value ${sum.trades ? (sum.net_pnl >= 0 ? "positive" : "negative") : ""}">${sum.trades ? fmt(sum.net_pnl) : "—"}</div></div>
+    <div class="metric-card"><div class="metric-label">Profit factor</div><div class="metric-value">${sum.trades && sum.profit_factor !== null ? sum.profit_factor : "—"}</div></div>
+    <div class="metric-card"><div class="metric-label">Expectativa/op.</div><div class="metric-value ${sum.trades ? (sum.expectancy_per_trade >= 0 ? "positive" : "negative") : ""}">${sum.trades ? fmt(sum.expectancy_per_trade) : "—"}</div></div>
   `;
+
+  const banner = $("currentOrderBanner");
+  if (s.current_order) {
+    banner.classList.remove("hidden");
+    banner.textContent = `Ejecutando ${s.current_order.direction} ${s.pair} — stake ${fmt(s.current_order.stake)} (desde ${s.current_order.entry_time})`;
+  } else {
+    banner.classList.add("hidden");
+  }
+
+  $("liveTradesCount").textContent = s.trades.length;
+  document.querySelector("#liveTradesTable tbody").innerHTML = s.trades.slice().reverse().map((t, i) => `
+    <tr>
+      <td>${s.trades.length - i}</td><td>${t.entry_time}</td><td>${t.direction}</td><td>${fmt(t.stake)}</td>
+      <td class="${t.status === "open" ? "" : t.result === "WIN" ? "win" : "loss"}">${t.status === "open" ? "en curso…" : t.result || t.status}</td>
+      <td class="${t.pnl >= 0 ? "win" : t.pnl < 0 ? "loss" : ""}">${t.pnl !== null ? fmt(t.pnl) : "—"}</td>
+      <td>${t.capital_after !== null ? fmt(t.capital_after) : "—"}</td>
+    </tr>`).join("");
+
   $("liveLog").innerHTML = s.log.map((l) => `<div class="live-log-line"><span class="t">${l.at}</span>${l.msg}</div>`).join("");
   $("liveLog").scrollTop = $("liveLog").scrollHeight;
   if (s.error) toast(s.error, true);
@@ -817,12 +850,19 @@ async function renderLiveSessionsList() {
     el.innerHTML = `<p class="muted small">Sin sesiones todavía.</p>`;
     return;
   }
-  el.innerHTML = sessions.map((s) => `
+  el.innerHTML = sessions.map((s) => {
+    const sum = s.summary || {};
+    const winrateTxt = sum.trades ? `${sum.winrate_pct}%` : "—";
+    const pnlTxt = sum.trades ? fmt(sum.net_pnl) : "—";
+    const pnlCls = sum.trades ? (sum.net_pnl >= 0 ? "positive" : "negative") : "";
+    return `
     <div class="lib-card">
       <div class="lib-card-top"><span class="lib-card-name">${s.pair} · ${s.timeframe}</span><span class="session-status ${s.status}">${s.status}</span></div>
-      <div class="lib-card-meta">Modo: <b>${s.mode}</b>${s.dry_run ? " (dry-run)" : ""}<br>Capital: <b>${s.capital !== null ? fmt(s.capital) : "—"}</b> — Operaciones: <b>${s.trades_count}</b></div>
+      <div class="lib-card-meta">Modo: <b>${s.mode}</b>${s.dry_run ? " (dry-run)" : ""} — desde ${fmtDate(s.started_at)}<br>Capital: <b>${s.capital !== null ? fmt(s.capital) : "—"}</b> — Operaciones: <b>${s.trades_count}</b></div>
+      <div class="lib-card-stats"><span>Winrate: <b>${winrateTxt}</b></span><span>PnL: <b class="${pnlCls}">${pnlTxt}</b></span></div>
       <div class="lib-card-actions"><button data-action="reconnect-session" data-id="${s.id}">Reconectar</button></div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
   el.querySelectorAll("[data-action=reconnect-session]").forEach((btn) => {
     btn.addEventListener("click", () => {
       liveSessionId = btn.dataset.id;

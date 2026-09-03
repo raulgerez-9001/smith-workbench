@@ -325,6 +325,9 @@ function defaultMoneyManagement() {
     initial_capital: 1000, stake_mode: "percent", stake_value: 2, payout: 0.85,
     martingale: false, martingale_multiplier: 2.0, martingale_max_steps: 2,
     max_daily_loss_pct: 20,
+    // Demora aleatoria: solo se aplica en operativa en vivo (el servidor),
+    // no afecta al backtest -- viaja como parte de la estrategia guardada.
+    random_delay_enabled: false, random_delay_min_sec: 1.0, random_delay_max_sec: 6.0,
   };
 }
 
