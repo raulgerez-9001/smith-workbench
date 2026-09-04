@@ -718,6 +718,7 @@ async function populateLiveStrategySelect() {
 
 document.querySelector('.tab-btn[data-tab="live"]').addEventListener("click", async () => {
   await populateLiveStrategySelect();
+  await renderLiveSessionsList();  // sesiones de OTROS dispositivos, no solo la propia
   if (liveSessionId) resumePolling();
 });
 
@@ -872,10 +873,31 @@ async function renderLiveSessionsList() {
   });
 }
 
+// ---------------- auto-refresh: la pestaña activa se actualiza sola cada
+// pocos segundos, para que los cambios hechos desde otro dispositivo
+// (nuevas descargas, sesiones, estrategias) aparezcan sin tener que hacer
+// nada manualmente. ----------------
+
+const AUTO_REFRESH_MS = 6000;
+
+async function refreshActiveTab() {
+  const active = document.querySelector(".tab-btn.active")?.dataset.tab;
+  if (!active) return;
+  try {
+    if (active === "strategies") await renderStrategiesList();
+    else if (active === "backtests") await renderBacktestsList();
+    else if (active === "data") { await renderDatasetsList(); await renderServerDatasetsList(); }
+    else if (active === "live") await renderLiveSessionsList();
+  } catch {
+    // fallas de red silenciosas ac\u00e1 -- ya se avisan en el lugar que corresponda
+  }
+}
+
 // ---------------- init ----------------
 
 (async function init() {
   syncModuleToggles();
   loadBackendCfgIntoForm();
   await refreshPairSelect();
+  setInterval(refreshActiveTab, AUTO_REFRESH_MS);
 })();
