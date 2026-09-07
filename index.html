@@ -175,21 +175,24 @@
     <h2 class="panel-title">Datos historicos</h2>
 
     <details class="settings-details">
-      <summary>⚙ Configuración del servidor</summary>
+      <summary>⚙ Configuración</summary>
       <div class="upload-box" style="margin-top:10px;">
         <div class="field-row"><label>URL del servidor</label><input type="text" id="backendUrlInput" placeholder="https://tu-dominio.com"></div>
         <div class="field-row"><label>Token (X-API-Key)</label><input type="password" id="backendTokenInput" placeholder="tu-token-secreto"></div>
+        <div class="field-row"><label>Usuario IQ Option</label><input type="text" id="iqEmailInput" placeholder="tu@email.com"></div>
+        <div class="field-row"><label>Contraseña IQ Option</label><input type="password" id="iqPasswordInput"></div>
         <button id="saveBackendCfgBtn" class="btn btn-ghost">Guardar</button>
         <span id="backendStatus" class="pair-meta"></span>
       </div>
+      <p class="module-hint">La contraseña de IQ Option queda guardada en este navegador (no en el servidor ni en GitHub) para no tener que escribirla cada vez. Si compartís esta computadora con alguien más, no la guardes acá.</p>
     </details>
 
     <h3 class="module-title" style="margin-top:20px;">Pedir datos a IQ Option</h3>
-    <p class="muted small">Se conecta a tu servidor en la nube (configuralo arriba), que a su vez habla con IQ Option. Tu usuario y contraseña se mandan directo al servidor, no quedan guardados en el navegador.</p>
+    <p class="muted small">Se conecta a tu servidor en la nube, que a su vez habla con IQ Option.</p>
     <div class="upload-box">
-      <div class="field-row"><label>Usuario IQ Option</label><input type="text" id="iqEmailInput" placeholder="tu@email.com"></div>
-      <div class="field-row"><label>Contraseña</label><input type="password" id="iqPasswordInput"></div>
-      <div class="field-row"><label>Pares (separados por coma)</label><input type="text" id="iqPairsInput" placeholder="EURUSD, GBPUSD, USDJPY" style="width:260px;"></div>
+      <div class="field-row"><label>Activos</label>
+        <button id="loadAssetsBtnData" class="btn btn-ghost">Cargar lista de activos</button>
+      </div>
       <div class="field-row"><label>Temporalidad</label>
         <select id="iqTimeframeInput">
           <option value="1m">1 min</option><option value="5m">5 min</option><option value="15m">15 min</option>
@@ -198,8 +201,9 @@
       </div>
       <div class="field-row"><label>Cantidad de velas</label><input type="number" id="iqCandlesInput" value="5000" min="1" max="200000"></div>
       <div class="field-row"><label>Fecha fin (opcional)</label><input type="datetime-local" id="iqEndInput"></div>
-      <button id="iqFetchBtn" class="btn btn-accent">Pedir a IQ Option</button>
     </div>
+    <div id="assetsCheckboxList" class="assets-list hidden"></div>
+    <button id="iqFetchBtn" class="btn btn-accent" style="margin-top:10px;">Pedir a IQ Option</button>
 
     <div id="fetchProgress" class="hidden" style="margin-top:14px;"></div>
 
@@ -232,7 +236,10 @@
 
     <div class="upload-box">
       <div class="field-row"><label>Estrategia</label><select id="liveStrategySelect" style="width:220px;"></select></div>
-      <div class="field-row"><label>Par</label><input type="text" id="livePairInput" placeholder="EURUSD" style="width:120px;"></div>
+      <div class="field-row"><label>Par</label>
+        <select id="livePairInput" style="width:160px;"><option value="">Cargar lista…</option></select>
+        <button id="loadAssetsBtnLive" class="btn btn-ghost" style="margin-left:6px;">↻</button>
+      </div>
       <div class="field-row"><label>Temporalidad</label>
         <select id="liveTimeframeInput">
           <option value="1m">1 min</option><option value="5m">5 min</option><option value="15m">15 min</option>

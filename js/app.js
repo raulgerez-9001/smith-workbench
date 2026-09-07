@@ -259,8 +259,25 @@ async function renderServerDatasetsList() {
     <div class="lib-card">
       <div class="lib-card-top"><span class="lib-card-name">${p.pair} · ${TIMEFRAME_LABEL[p.timeframe] || p.timeframe}</span></div>
       <div class="lib-card-meta">${p.candles} velas<br>${p.from} → ${p.to}</div>
-      <div class="lib-card-actions"><button data-action="import-dataset" data-pair="${p.pair}" data-tf="${p.timeframe}">Importar a este dispositivo</button></div>
+      <div class="lib-card-actions">
+        <button data-action="import-dataset" data-pair="${p.pair}" data-tf="${p.timeframe}">Importar a este dispositivo</button>
+        <button class="danger" data-action="delete-server-dataset" data-pair="${p.pair}" data-tf="${p.timeframe}">Eliminar del servidor</button>
+      </div>
     </div>`).join("");
+
+  el.querySelectorAll("[data-action=delete-server-dataset]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const { pair, tf } = btn.dataset;
+      if (!confirm(`¿Eliminar ${pair} · ${TIMEFRAME_LABEL[tf]} del servidor? Esto no afecta lo que ya importaste a este dispositivo.`)) return;
+      try {
+        await backendApi(`/api/pairs/${encodeURIComponent(pair)}?timeframe=${tf}`, { method: "DELETE" });
+        toast(`${pair} · ${TIMEFRAME_LABEL[tf]} eliminado del servidor.`);
+        await renderServerDatasetsList();
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
 
   el.querySelectorAll("[data-action=import-dataset]").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -587,6 +604,8 @@ function getBackendCfg() {
   return {
     url: (localStorage.getItem("smith_backend_url") || "").replace(/\/$/, ""),
     token: localStorage.getItem("smith_backend_token") || "",
+    iqEmail: localStorage.getItem("smith_iq_email") || "",
+    iqPassword: localStorage.getItem("smith_iq_password") || "",
   };
 }
 
@@ -594,6 +613,8 @@ function loadBackendCfgIntoForm() {
   const cfg = getBackendCfg();
   $("backendUrlInput").value = cfg.url;
   $("backendTokenInput").value = cfg.token;
+  $("iqEmailInput").value = cfg.iqEmail;
+  $("iqPasswordInput").value = cfg.iqPassword;
   $("backendStatus").textContent = cfg.url ? "configurado" : "sin configurar";
 }
 
@@ -602,14 +623,16 @@ $("saveBackendCfgBtn").addEventListener("click", async () => {
   const token = $("backendTokenInput").value.trim();
   localStorage.setItem("smith_backend_url", url);
   localStorage.setItem("smith_backend_token", token);
+  localStorage.setItem("smith_iq_email", $("iqEmailInput").value.trim());
+  localStorage.setItem("smith_iq_password", $("iqPasswordInput").value);
   $("backendStatus").textContent = url ? "configurado" : "sin configurar";
-  toast("Configuración del servidor guardada.");
+  toast("Configuración guardada.");
   await renderServerDatasetsList();
 });
 
 async function backendApi(path, opts = {}) {
   const cfg = getBackendCfg();
-  if (!cfg.url) throw new Error('Configurá la URL del servidor arriba en "⚙ Configuración del servidor".');
+  if (!cfg.url) throw new Error('Configurá la URL del servidor arriba en "⚙ Configuración".');
   const res = await fetch(`${cfg.url}${path}`, {
     headers: { "Content-Type": "application/json", "X-API-Key": cfg.token },
     ...opts,
@@ -621,16 +644,71 @@ async function backendApi(path, opts = {}) {
 
 // ---------------- Etapa 3: pedir datos a IQ Option ----------------
 
+// ---------------- lista de activos de IQ Option (checkboxes) ----------------
+
+let loadedAssets = [];
+
+function categoryLabel(a) {
+  if (a.is_otc) return "OTC";
+  if (a.category === "cfd") return "Índices / CFD";
+  if (a.category === "digital" || a.category === "crypto") return "Cripto";
+  return "Divisas";
+}
+
+async function loadAssetsList(targetElId, mode = "checkbox") {
+  const cfg = getBackendCfg();
+  if (!cfg.iqEmail || !cfg.iqPassword) {
+    toast("Guardá tu usuario y contraseña de IQ Option en ⚙ Configuración primero.", true);
+    return;
+  }
+  const btn = mode === "checkbox" ? $("loadAssetsBtnData") : $("loadAssetsBtnLive");
+  const prevText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Consultando…";
+  try {
+    loadedAssets = await backendApi("/api/iq-assets", { method: "POST", body: JSON.stringify({ email: cfg.iqEmail, password: cfg.iqPassword }) });
+    if (mode === "checkbox") renderAssetsCheckboxList();
+    else renderAssetsSelect();
+  } catch (err) {
+    toast(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevText;
+  }
+}
+
+function renderAssetsCheckboxList() {
+  const el = $("assetsCheckboxList");
+  el.classList.remove("hidden");
+  const groups = {};
+  for (const a of loadedAssets) {
+    const g = categoryLabel(a);
+    (groups[g] = groups[g] || []).push(a);
+  }
+  el.innerHTML = Object.entries(groups).map(([group, assets]) => `
+    <div class="asset-group">
+      <div class="asset-group-title">${group}</div>
+      ${assets.map((a) => `
+        <label class="asset-checkbox ${a.open ? "" : "closed"}">
+          <input type="checkbox" class="asset-check" value="${a.name}">
+          <span class="asset-dot ${a.open ? "open" : ""}"></span>${a.name}
+        </label>`).join("")}
+    </div>`).join("");
+}
+
+$("loadAssetsBtnData").addEventListener("click", () => loadAssetsList("assetsCheckboxList", "checkbox"));
+
 $("iqFetchBtn").addEventListener("click", async () => {
-  const email = $("iqEmailInput").value.trim();
-  const password = $("iqPasswordInput").value;
-  const pairs = $("iqPairsInput").value.split(",").map((p) => p.trim().toUpperCase()).filter(Boolean);
+  const cfg = getBackendCfg();
+  const email = cfg.iqEmail;
+  const password = cfg.iqPassword;
+  const pairs = Array.from(document.querySelectorAll(".asset-check:checked")).map((el) => el.value);
   const timeframe = $("iqTimeframeInput").value;
   const candles = Number($("iqCandlesInput").value);
   const endLocal = $("iqEndInput").value;
 
-  if (!email || !password) { toast("Completá usuario y contraseña de IQ Option.", true); return; }
-  if (pairs.length === 0) { toast("Escribí al menos un par.", true); return; }
+  if (!email || !password) { toast("Guardá tu usuario y contraseña de IQ Option en ⚙ Configuración primero.", true); return; }
+  if (pairs.length === 0) { toast("Cargá la lista de activos y tildá al menos uno.", true); return; }
 
   const btn = $("iqFetchBtn");
   btn.disabled = true;
@@ -641,7 +719,6 @@ $("iqFetchBtn").addEventListener("click", async () => {
     if (endLocal) body.end = new Date(endLocal).toISOString();
 
     const { job_id } = await backendApi("/api/fetch-iqoption/start", { method: "POST", body: JSON.stringify(body) });
-    $("iqPasswordInput").value = ""; // no la dejamos flotando en el campo mas de lo necesario
     btn.textContent = "Descargando…";
     await pollFetchJob(job_id, timeframe);
   } catch (err) {
@@ -694,6 +771,24 @@ async function pollFetchJob(jobId, timeframe) {
   await renderDatasetsList();
   if (lastPair) await refreshPairSelect(lastPair);
 }
+
+function renderAssetsSelect() {
+  const sel = $("livePairInput");
+  const groups = {};
+  for (const a of loadedAssets) {
+    const g = categoryLabel(a);
+    (groups[g] = groups[g] || []).push(a);
+  }
+  sel.innerHTML = Object.entries(groups).map(([group, assets]) => `
+    <optgroup label="${group}">
+      ${assets.map((a) => `<option value="${a.name}">${a.open ? "●" : "○"} ${a.name}</option>`).join("")}
+    </optgroup>`).join("");
+}
+
+$("loadAssetsBtnLive").addEventListener("click", (e) => {
+  e.preventDefault();
+  loadAssetsList("livePairInput", "select");
+});
 
 // ---------------- Etapa 4: operativa en vivo ----------------
 
@@ -861,9 +956,24 @@ async function renderLiveSessionsList() {
       <div class="lib-card-top"><span class="lib-card-name">${s.pair} · ${s.timeframe}</span><span class="session-status ${s.status}">${s.status}</span></div>
       <div class="lib-card-meta">Modo: <b>${s.mode}</b>${s.dry_run ? " (dry-run)" : ""} — desde ${fmtDate(s.started_at)}<br>Capital: <b>${s.capital !== null ? fmt(s.capital) : "—"}</b> — Operaciones: <b>${s.trades_count}</b></div>
       <div class="lib-card-stats"><span>Winrate: <b>${winrateTxt}</b></span><span>PnL: <b class="${pnlCls}">${pnlTxt}</b></span></div>
-      <div class="lib-card-actions"><button data-action="reconnect-session" data-id="${s.id}">Reconectar</button></div>
+      <div class="lib-card-actions">
+        <button data-action="reconnect-session" data-id="${s.id}">Reconectar</button>
+        ${s.status !== "running" ? `<button class="danger" data-action="delete-session" data-id="${s.id}">Eliminar</button>` : ""}
+      </div>
     </div>`;
   }).join("");
+  el.querySelectorAll("[data-action=delete-session]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar esta sesión de la lista?")) return;
+      try {
+        await backendApi(`/api/live/sessions/${btn.dataset.id}`, { method: "DELETE" });
+        if (liveSessionId === btn.dataset.id) { liveSessionId = null; localStorage.removeItem("smith_live_session_id"); }
+        await renderLiveSessionsList();
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
   el.querySelectorAll("[data-action=reconnect-session]").forEach((btn) => {
     btn.addEventListener("click", () => {
       liveSessionId = btn.dataset.id;
