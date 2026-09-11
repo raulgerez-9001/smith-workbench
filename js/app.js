@@ -666,9 +666,13 @@ async function loadAssetsList(targetElId, mode = "checkbox") {
   btn.disabled = true;
   btn.textContent = "Consultando…";
   try {
-    loadedAssets = await backendApi("/api/iq-assets", { method: "POST", body: JSON.stringify({ email: cfg.iqEmail, password: cfg.iqPassword }) });
+    const result = await backendApi("/api/iq-assets", { method: "POST", body: JSON.stringify({ email: cfg.iqEmail, password: cfg.iqPassword }) });
+    loadedAssets = result.assets || [];
     if (mode === "checkbox") renderAssetsCheckboxList();
     else renderAssetsSelect();
+    if (result.failed_categories && result.failed_categories.length > 0) {
+      toast(`Se cargaron los activos disponibles. Algunas categorías no respondieron: ${result.failed_categories.join(", ")}`, true);
+    }
   } catch (err) {
     toast(err.message, true);
   } finally {
