@@ -646,73 +646,20 @@ async function backendApi(path, opts = {}) {
 
 // ---------------- lista de activos de IQ Option (checkboxes) ----------------
 
-let loadedAssets = [];
-
-function categoryLabel(a) {
-  if (a.is_otc) return "OTC";
-  if (a.category === "cfd") return "Índices / CFD";
-  if (a.category === "digital" || a.category === "crypto") return "Cripto";
-  return "Divisas";
-}
-
-async function loadAssetsList(targetElId, mode = "checkbox") {
-  const cfg = getBackendCfg();
-  if (!cfg.iqEmail || !cfg.iqPassword) {
-    toast("Guardá tu usuario y contraseña de IQ Option en ⚙ Configuración primero.", true);
-    return;
-  }
-  const btn = mode === "checkbox" ? $("loadAssetsBtnData") : $("loadAssetsBtnLive");
-  const prevText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = "Consultando…";
-  try {
-    const result = await backendApi("/api/iq-assets", { method: "POST", body: JSON.stringify({ email: cfg.iqEmail, password: cfg.iqPassword }) });
-    loadedAssets = result.assets || [];
-    if (mode === "checkbox") renderAssetsCheckboxList();
-    else renderAssetsSelect();
-    if (result.failed_categories && result.failed_categories.length > 0) {
-      toast(`Se cargaron los activos disponibles. Algunas categorías no respondieron: ${result.failed_categories.join(", ")}`, true);
-    }
-  } catch (err) {
-    toast(err.message, true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = prevText;
-  }
-}
-
-function renderAssetsCheckboxList() {
-  const el = $("assetsCheckboxList");
-  el.classList.remove("hidden");
-  const groups = {};
-  for (const a of loadedAssets) {
-    const g = categoryLabel(a);
-    (groups[g] = groups[g] || []).push(a);
-  }
-  el.innerHTML = Object.entries(groups).map(([group, assets]) => `
-    <div class="asset-group">
-      <div class="asset-group-title">${group}</div>
-      ${assets.map((a) => `
-        <label class="asset-checkbox ${a.open ? "" : "closed"}">
-          <input type="checkbox" class="asset-check" value="${a.name}">
-          <span class="asset-dot ${a.open ? "open" : ""}"></span>${a.name}
-        </label>`).join("")}
-    </div>`).join("");
-}
-
-$("loadAssetsBtnData").addEventListener("click", () => loadAssetsList("assetsCheckboxList", "checkbox"));
-
 $("iqFetchBtn").addEventListener("click", async () => {
   const cfg = getBackendCfg();
   const email = cfg.iqEmail;
   const password = cfg.iqPassword;
-  const pairs = Array.from(document.querySelectorAll(".asset-check:checked")).map((el) => el.value);
+  const pairs = $("assetsManualInput").value
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
   const timeframe = $("iqTimeframeInput").value;
   const candles = Number($("iqCandlesInput").value);
   const endLocal = $("iqEndInput").value;
 
   if (!email || !password) { toast("Guardá tu usuario y contraseña de IQ Option en ⚙ Configuración primero.", true); return; }
-  if (pairs.length === 0) { toast("Cargá la lista de activos y tildá al menos uno.", true); return; }
+  if (pairs.length === 0) { toast("Escribí al menos un activo, separado por comas.", true); return; }
 
   const btn = $("iqFetchBtn");
   btn.disabled = true;
@@ -776,24 +723,6 @@ async function pollFetchJob(jobId, timeframe) {
   if (lastPair) await refreshPairSelect(lastPair);
 }
 
-function renderAssetsSelect() {
-  const sel = $("livePairInput");
-  const groups = {};
-  for (const a of loadedAssets) {
-    const g = categoryLabel(a);
-    (groups[g] = groups[g] || []).push(a);
-  }
-  sel.innerHTML = Object.entries(groups).map(([group, assets]) => `
-    <optgroup label="${group}">
-      ${assets.map((a) => `<option value="${a.name}">${a.open ? "●" : "○"} ${a.name}</option>`).join("")}
-    </optgroup>`).join("");
-}
-
-$("loadAssetsBtnLive").addEventListener("click", (e) => {
-  e.preventDefault();
-  loadAssetsList("livePairInput", "select");
-});
-
 // ---------------- Etapa 4: operativa en vivo ----------------
 
 let liveSessionId = localStorage.getItem("smith_live_session_id") || null;
@@ -802,7 +731,6 @@ let livePollTimer = null;
 $("liveModeSelect").addEventListener("change", updateLiveModeUI);
 function updateLiveModeUI() {
   const mode = $("liveModeSelect").value;
-  $("liveCredsBox").classList.toggle("hidden", mode === "simulate");
   $("liveRealBox").classList.toggle("hidden", mode !== "real");
 }
 updateLiveModeUI();
@@ -810,9 +738,8 @@ updateLiveModeUI();
 async function populateLiveStrategySelect() {
   const strategies = await dbGetAll("strategies");
   const sel = $("liveStrategySelect");
-  sel.innerHTML = strategies.length
-    ? strategies.map((s) => `<option value="${s.id}">${s.name}</option>`).join("")
-    : `<option value="">Sin estrategias guardadas</option>`;
+  sel.innerHTML = `<option value="">— Seleccioná una estrategia —</option>` +
+    strategies.map((s) => `<option value="${s.id}">${s.name}</option>`).join("");
 }
 
 document.querySelector('.tab-btn[data-tab="live"]').addEventListener("click", async () => {
@@ -841,9 +768,13 @@ $("liveStartBtn").addEventListener("click", async () => {
   };
 
   if (mode !== "simulate") {
-    body.email = $("liveEmailInput").value.trim();
-    body.password = $("livePasswordInput").value;
-    if (!body.email || !body.password) { toast("Completá usuario y contraseña de IQ Option.", true); return; }
+    const cfg = getBackendCfg();
+    body.email = cfg.iqEmail;
+    body.password = cfg.iqPassword;
+    if (!body.email || !body.password) {
+      toast("Guardá tu usuario y contraseña de IQ Option en ⚙ Configuración (pestaña Datos) primero.", true);
+      return;
+    }
   }
   if (mode === "real") {
     body.confirm_real = $("liveConfirmRealInput").value.trim();
@@ -858,7 +789,6 @@ $("liveStartBtn").addEventListener("click", async () => {
   btn.textContent = "Iniciando…";
   try {
     const { session_id } = await backendApi("/api/live/start", { method: "POST", body: JSON.stringify(body) });
-    $("livePasswordInput").value = "";
     liveSessionId = session_id;
     localStorage.setItem("smith_live_session_id", session_id);
     toast(`Sesión iniciada (${session_id}).`);

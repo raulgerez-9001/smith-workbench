@@ -191,8 +191,9 @@
     <p class="muted small">Se conecta a tu servidor en la nube, que a su vez habla con IQ Option.</p>
     <div class="upload-box">
       <div class="field-row"><label>Activos</label>
-        <button id="loadAssetsBtnData" class="btn btn-ghost">Cargar lista de activos</button>
+        <input type="text" id="assetsManualInput" placeholder="EURUSD-OTC, GBPUSD-OTC, AUDCAD-OTC" style="width:100%;">
       </div>
+      <p class="module-hint">Escribí los activos separados por comas, tal como figuran en IQ Option (los OTC suelen terminar en <code>-OTC</code>).</p>
       <div class="field-row"><label>Temporalidad</label>
         <select id="iqTimeframeInput">
           <option value="1m">1 min</option><option value="5m">5 min</option><option value="15m">15 min</option>
@@ -202,7 +203,6 @@
       <div class="field-row"><label>Cantidad de velas</label><input type="number" id="iqCandlesInput" value="5000" min="1" max="200000"></div>
       <div class="field-row"><label>Fecha fin (opcional)</label><input type="datetime-local" id="iqEndInput"></div>
     </div>
-    <div id="assetsCheckboxList" class="assets-list hidden"></div>
     <button id="iqFetchBtn" class="btn btn-accent" style="margin-top:10px;">Pedir a IQ Option</button>
 
     <div id="fetchProgress" class="hidden" style="margin-top:14px;"></div>
@@ -236,9 +236,8 @@
 
     <div class="upload-box">
       <div class="field-row"><label>Estrategia</label><select id="liveStrategySelect" style="width:220px;"></select></div>
-      <div class="field-row"><label>Par</label>
-        <select id="livePairInput" style="width:160px;"><option value="">Cargar lista…</option></select>
-        <button id="loadAssetsBtnLive" class="btn btn-ghost" style="margin-left:6px;">↻</button>
+      <div class="field-row"><label>Activo</label>
+        <input type="text" id="livePairInput" placeholder="EURUSD-OTC" style="width:160px;">
       </div>
       <div class="field-row"><label>Temporalidad</label>
         <select id="liveTimeframeInput">
@@ -255,10 +254,9 @@
       </div>
     </div>
 
-    <div class="upload-box" id="liveCredsBox" style="margin-top:10px;">
-      <div class="field-row"><label>Usuario IQ Option</label><input type="text" id="liveEmailInput" placeholder="tu@email.com"></div>
-      <div class="field-row"><label>Contraseña</label><input type="password" id="livePasswordInput"></div>
-      <div class="field-row field-row-checkbox"><label>Dry-run (solo avisar, no ejecutar)</label><input type="checkbox" id="liveDryRunInput" checked></div>
+    <div class="field-row field-row-checkbox" style="margin-top:10px;">
+      <label>Dry-run (solo avisar, no ejecutar)</label>
+      <input type="checkbox" id="liveDryRunInput" checked>
     </div>
 
     <div class="upload-box danger-box hidden" id="liveRealBox" style="margin-top:10px;">
