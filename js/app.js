@@ -19,6 +19,14 @@ const STRATEGY_FIELDS = [
   "cci_enabled", "cci_period", "cci_oversold", "cci_overbought",
   "stoch_enabled", "stoch_k", "stoch_d", "stoch_smooth", "stoch_oversold", "stoch_overbought",
   "ma_enabled", "ma_type", "ma_period",
+  "psar_enabled", "psar_af_step", "psar_af_max",
+  "adx_enabled", "adx_period", "adx_min_strength",
+  "macd_enabled", "macd_fast", "macd_slow", "macd_signal",
+  "ichimoku_enabled", "ichimoku_tenkan", "ichimoku_kijun", "ichimoku_senkou_b",
+  "ao_enabled", "ao_fast", "ao_slow",
+  "keltner_enabled", "keltner_period", "keltner_mult",
+  "alligator_enabled", "alligator_jaw", "alligator_teeth", "alligator_lips",
+  "fractals_enabled",
   "confirm_window",
 ];
 const TOGGLE_MODULES = ["bb_enabled", "rsi_enabled", "cci_enabled", "stoch_enabled", "ma_enabled"];
@@ -122,6 +130,20 @@ function syncModuleToggles() {
   updateExpiryHint();
 }
 TOGGLE_MODULES.forEach((id) => $(id).addEventListener("change", syncModuleToggles));
+
+const NEW_INDICATOR_TOGGLES = ["psar_enabled", "adx_enabled", "macd_enabled", "ichimoku_enabled",
+  "ao_enabled", "keltner_enabled", "alligator_enabled", "fractals_enabled"];
+
+function syncNewIndicatorVisibility() {
+  for (const id of NEW_INDICATOR_TOGGLES) {
+    const module = $(id).closest(".module");
+    module.querySelectorAll(".ind-sub").forEach((row) => {
+      row.classList.toggle("hidden", !$(id).checked);
+    });
+  }
+}
+NEW_INDICATOR_TOGGLES.forEach((id) => $(id).addEventListener("change", syncNewIndicatorVisibility));
+syncNewIndicatorVisibility();
 
 function syncMartingaleVisibility() {
   const on = $("martingale").checked;
@@ -837,6 +859,7 @@ function renderLiveStatus(s) {
   const sum = s.summary || {};
   $("liveMetricsGrid").innerHTML = `
     <div class="metric-card"><div class="metric-label">Estado</div><div class="metric-value"><span class="session-status ${s.status}">${s.status}</span></div></div>
+    <div class="metric-card"><div class="metric-label">Estrategia</div><div class="metric-value">${s.name || "—"}</div></div>
     <div class="metric-card"><div class="metric-label">Capital</div><div class="metric-value">${s.capital !== null ? fmt(s.capital) : "—"}</div></div>
     <div class="metric-card"><div class="metric-label">Operaciones</div><div class="metric-value">${s.trades_count}</div></div>
     <div class="metric-card"><div class="metric-label">Modo</div><div class="metric-value" style="font-size:13px;">${s.mode}${s.dry_run ? " (dry-run)" : ""}</div></div>
@@ -888,7 +911,7 @@ async function renderLiveSessionsList() {
     return `
     <div class="lib-card">
       <div class="lib-card-top"><span class="lib-card-name">${s.pair} · ${s.timeframe}</span><span class="session-status ${s.status}">${s.status}</span></div>
-      <div class="lib-card-meta">Modo: <b>${s.mode}</b>${s.dry_run ? " (dry-run)" : ""} — desde ${fmtDate(s.started_at)}<br>Capital: <b>${s.capital !== null ? fmt(s.capital) : "—"}</b> — Operaciones: <b>${s.trades_count}</b></div>
+      <div class="lib-card-meta">Estrategia: <b>${s.name || "—"}</b> — Modo: <b>${s.mode}</b>${s.dry_run ? " (dry-run)" : ""} — desde ${fmtDate(s.started_at)}<br>Capital: <b>${s.capital !== null ? fmt(s.capital) : "—"}</b> — Operaciones: <b>${s.trades_count}</b></div>
       <div class="lib-card-stats"><span>Winrate: <b>${winrateTxt}</b></span><span>PnL: <b class="${pnlCls}">${pnlTxt}</b></span></div>
       <div class="lib-card-actions">
         <button data-action="reconnect-session" data-id="${s.id}">Reconectar</button>

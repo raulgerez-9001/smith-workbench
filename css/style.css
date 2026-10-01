@@ -640,3 +640,15 @@ td.loss { color: var(--put); }
   flex-shrink: 0;
 }
 .asset-dot.open { background: var(--ok); }
+
+/* ---- Pantalla dividida del backtest: indicadores con scroll, resultados fijos ---- */
+#tab-backtest .layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 400px) 1fr;
+  height: calc(100dvh - 60px);
+  overflow: hidden;
+  align-items: stretch;
+  padding-bottom: 18px;
+}
+#tab-backtest .params-panel { overflow-y: auto; }
+#tab-backtest .results-panel { overflow-y: auto; }

@@ -70,6 +70,64 @@
         <div class="field-row"><label>Periodo</label><input type="number" id="ma_period" value="8" min="1"></div>
       </section>
 
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="psar_enabled"> Parabolic SAR</label></h3>
+        <div class="field-row ind-sub"><label>Aceleración inicial</label><input type="number" id="psar_af_step" value="0.02" step="0.01" min="0.01"></div>
+        <div class="field-row ind-sub"><label>Aceleración máx.</label><input type="number" id="psar_af_max" value="0.2" step="0.05" min="0.05"></div>
+        <p class="module-hint">Confirmación: exige que el precio esté del lado correcto del SAR.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="adx_enabled"> ADX</label></h3>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="adx_period" value="14" min="1"></div>
+        <div class="field-row ind-sub"><label>Fuerza mínima (&gt;)</label><input type="number" id="adx_min_strength" value="25" min="1"></div>
+        <p class="module-hint">Confirmación: filtro de fuerza de tendencia, igual para CALL y PUT.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="macd_enabled"> MACD</label></h3>
+        <div class="field-row ind-sub"><label>Rápida</label><input type="number" id="macd_fast" value="12" min="1"></div>
+        <div class="field-row ind-sub"><label>Lenta</label><input type="number" id="macd_slow" value="26" min="1"></div>
+        <div class="field-row ind-sub"><label>Señal</label><input type="number" id="macd_signal" value="9" min="1"></div>
+        <p class="module-hint">Extremo: dispara en el cruce de la línea MACD con su señal.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="ichimoku_enabled"> Ichimoku (nube)</label></h3>
+        <div class="field-row ind-sub"><label>Tenkan</label><input type="number" id="ichimoku_tenkan" value="9" min="1"></div>
+        <div class="field-row ind-sub"><label>Kijun</label><input type="number" id="ichimoku_kijun" value="26" min="1"></div>
+        <div class="field-row ind-sub"><label>Senkou B</label><input type="number" id="ichimoku_senkou_b" value="52" min="1"></div>
+        <p class="module-hint">Confirmación: exige precio fuera de la nube, del lado correcto.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="ao_enabled"> Awesome Oscillator</label></h3>
+        <div class="field-row ind-sub"><label>Rápida</label><input type="number" id="ao_fast" value="5" min="1"></div>
+        <div class="field-row ind-sub"><label>Lenta</label><input type="number" id="ao_slow" value="34" min="1"></div>
+        <p class="module-hint">Extremo: dispara en el cruce del cero.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="keltner_enabled"> Keltner Channels</label></h3>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="keltner_period" value="20" min="1"></div>
+        <div class="field-row ind-sub"><label>Multiplicador ATR</label><input type="number" id="keltner_mult" value="2.0" step="0.1" min="0.1"></div>
+        <p class="module-hint">Extremo: precio tocando el canal, igual que Bollinger.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="alligator_enabled"> Alligator</label></h3>
+        <div class="field-row ind-sub"><label>Mandíbula</label><input type="number" id="alligator_jaw" value="13" min="1"></div>
+        <div class="field-row ind-sub"><label>Dientes</label><input type="number" id="alligator_teeth" value="8" min="1"></div>
+        <div class="field-row ind-sub"><label>Labios</label><input type="number" id="alligator_lips" value="5" min="1"></div>
+        <p class="module-hint">Confirmación: exige las tres líneas alineadas a favor.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="fractals_enabled"> Fractales</label></h3>
+        <p class="module-hint">Extremo: fractal de 5 velas confirmado (la señal se corre 2 velas para no "ver el futuro"). Sin parámetros.</p>
+      </section>
+
       <section class="module">
         <h3 class="module-title">Confirmacion &amp; salida</h3>
         <div class="field-row"><label>Ventana confirmacion (velas)</label><input type="number" id="confirm_window" value="3" min="1"></div>
@@ -105,7 +163,7 @@
         <div class="field-row martingale-sub"><label>Multiplicador</label><input type="number" id="martingale_multiplier" value="2.0" step="0.1" min="1"></div>
         <div class="field-row martingale-sub"><label>Pasos maximos</label><input type="number" id="martingale_max_steps" value="2" min="1"></div>
         <div class="field-row"><label>Perdida diaria max (%)</label><input type="number" id="max_daily_loss_pct" value="20" min="1" max="100"></div>
-        <div class="field-row field-row-checkbox"><label>Demora aleatoria antes de operar</label><input type="checkbox" id="random_delay_enabled"></div>
+        <div class="field-row field-row-checkbox"><label>Demora aleatoria antes de operar</label><input type="checkbox" id="random_delay_enabled" checked></div>
         <div class="field-row delay-sub"><label>Mínimo (seg)</label><input type="number" id="random_delay_min_sec" value="1.0" step="0.5" min="0"></div>
         <div class="field-row delay-sub"><label>Máximo (seg)</label><input type="number" id="random_delay_max_sec" value="6.0" step="0.5" min="0"></div>
         <p class="module-hint">Solo aplica en operativa en vivo (demo/real) — no afecta al backtest.</p>
