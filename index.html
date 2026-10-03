@@ -6,6 +6,7 @@
 <title>Smith · Workbench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -33,56 +34,15 @@
     <aside class="panel params-panel">
       <h2 class="panel-title">Parametros</h2>
 
-      <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="bb_enabled" checked> Bandas de Bollinger</label></h3>
-        <div class="field-row"><label>Periodo</label><input type="number" id="bb_period" value="20" min="2"></div>
-        <div class="field-row"><label>Desviaciones (σ)</label><input type="number" id="bb_std" value="2.0" step="0.1" min="0.1"></div>
-      </section>
-
-      <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="rsi_enabled"> RSI</label></h3>
-        <div class="field-row"><label>Periodo</label><input type="number" id="rsi_period" value="14" min="1"></div>
-        <div class="field-row"><label>Sobreventa &lt;</label><input type="number" id="rsi_oversold" value="30" min="0" max="100"></div>
-        <div class="field-row"><label>Sobrecompra &gt;</label><input type="number" id="rsi_overbought" value="70" min="0" max="100"></div>
-      </section>
-
-      <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="cci_enabled"> CCI</label></h3>
-        <div class="field-row"><label>Periodo</label><input type="number" id="cci_period" value="20" min="1"></div>
-        <div class="field-row"><label>Sobreventa &lt;</label><input type="number" id="cci_oversold" value="-100" step="10"></div>
-        <div class="field-row"><label>Sobrecompra &gt;</label><input type="number" id="cci_overbought" value="100" step="10"></div>
-      </section>
-
-      <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="stoch_enabled" checked> Estocastico</label></h3>
-        <div class="field-row"><label>%K</label><input type="number" id="stoch_k" value="14" min="1"></div>
-        <div class="field-row"><label>%D</label><input type="number" id="stoch_d" value="3" min="1"></div>
-        <div class="field-row"><label>Suavizado</label><input type="number" id="stoch_smooth" value="3" min="1"></div>
-        <div class="field-row"><label>Sobreventa &lt;</label><input type="number" id="stoch_oversold" value="20" min="0" max="100"></div>
-        <div class="field-row"><label>Sobrecompra &gt;</label><input type="number" id="stoch_overbought" value="80" min="0" max="100"></div>
-      </section>
-
+            <p class="family-tip">💡 Los indicadores de una misma familia miden cosas parecidas: activá uno o dos por familia, no todos, para no duplicar señales.</p>
+      <div class="family-group">
+        <h4 class="family-title">Tendencia <span class="family-tag">cruces y dirección de la tendencia</span></h4>
       <section class="module">
         <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="ma_enabled" checked> Media movil</label></h3>
-        <div class="field-row"><label>Tipo</label>
+        <div class="field-row ind-sub"><label>Tipo</label>
           <select id="ma_type"><option value="ema">EMA</option><option value="sma">SMA</option></select>
         </div>
-        <div class="field-row"><label>Periodo</label><input type="number" id="ma_period" value="8" min="1"></div>
-      </section>
-
-
-      <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="psar_enabled"> Parabolic SAR</label></h3>
-        <div class="field-row ind-sub"><label>Aceleración inicial</label><input type="number" id="psar_af_step" value="0.02" step="0.01" min="0.01"></div>
-        <div class="field-row ind-sub"><label>Aceleración máx.</label><input type="number" id="psar_af_max" value="0.2" step="0.05" min="0.05"></div>
-        <p class="module-hint">Confirmación: exige que el precio esté del lado correcto del SAR.</p>
-      </section>
-
-      <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="adx_enabled"> ADX</label></h3>
-        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="adx_period" value="14" min="1"></div>
-        <div class="field-row ind-sub"><label>Fuerza mínima (&gt;)</label><input type="number" id="adx_min_strength" value="25" min="1"></div>
-        <p class="module-hint">Confirmación: filtro de fuerza de tendencia, igual para CALL y PUT.</p>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="ma_period" value="8" min="1"></div>
       </section>
 
       <section class="module">
@@ -102,20 +62,6 @@
       </section>
 
       <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="ao_enabled"> Awesome Oscillator</label></h3>
-        <div class="field-row ind-sub"><label>Rápida</label><input type="number" id="ao_fast" value="5" min="1"></div>
-        <div class="field-row ind-sub"><label>Lenta</label><input type="number" id="ao_slow" value="34" min="1"></div>
-        <p class="module-hint">Extremo: dispara en el cruce del cero.</p>
-      </section>
-
-      <section class="module">
-        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="keltner_enabled"> Keltner Channels</label></h3>
-        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="keltner_period" value="20" min="1"></div>
-        <div class="field-row ind-sub"><label>Multiplicador ATR</label><input type="number" id="keltner_mult" value="2.0" step="0.1" min="0.1"></div>
-        <p class="module-hint">Extremo: precio tocando el canal, igual que Bollinger.</p>
-      </section>
-
-      <section class="module">
         <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="alligator_enabled"> Alligator</label></h3>
         <div class="field-row ind-sub"><label>Mandíbula</label><input type="number" id="alligator_jaw" value="13" min="1"></div>
         <div class="field-row ind-sub"><label>Dientes</label><input type="number" id="alligator_teeth" value="8" min="1"></div>
@@ -124,9 +70,103 @@
       </section>
 
       <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="psar_enabled"> Parabolic SAR</label></h3>
+        <div class="field-row ind-sub"><label>Aceleración inicial</label><input type="number" id="psar_af_step" value="0.02" step="0.01" min="0.01"></div>
+        <div class="field-row ind-sub"><label>Aceleración máx.</label><input type="number" id="psar_af_max" value="0.2" step="0.05" min="0.05"></div>
+        <p class="module-hint">Confirmación: exige que el precio esté del lado correcto del SAR.</p>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="adx_enabled"> ADX</label></h3>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="adx_period" value="14" min="1"></div>
+        <div class="field-row ind-sub"><label>Fuerza mínima (&gt;)</label><input type="number" id="adx_min_strength" value="25" min="1"></div>
+        <p class="module-hint">Confirmación: filtro de fuerza de tendencia, igual para CALL y PUT.</p>
+      </section>
+      </div>
+
+      <div class="family-group">
+        <h4 class="family-title">Momentum <span class="family-tag">sobrecompra / sobreventa</span></h4>
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="rsi_enabled"> RSI</label></h3>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="rsi_period" value="14" min="1"></div>
+        <div class="field-row ind-sub"><label>Sobreventa &lt;</label><input type="number" id="rsi_oversold" value="30" min="0" max="100"></div>
+        <div class="field-row ind-sub"><label>Sobrecompra &gt;</label><input type="number" id="rsi_overbought" value="70" min="0" max="100"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="cci_enabled"> CCI</label></h3>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="cci_period" value="20" min="1"></div>
+        <div class="field-row ind-sub"><label>Sobreventa &lt;</label><input type="number" id="cci_oversold" value="-100" step="10"></div>
+        <div class="field-row ind-sub"><label>Sobrecompra &gt;</label><input type="number" id="cci_overbought" value="100" step="10"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="stoch_enabled" checked> Estocastico</label></h3>
+        <div class="field-row ind-sub"><label>%K</label><input type="number" id="stoch_k" value="14" min="1"></div>
+        <div class="field-row ind-sub"><label>%D</label><input type="number" id="stoch_d" value="3" min="1"></div>
+        <div class="field-row ind-sub"><label>Suavizado</label><input type="number" id="stoch_smooth" value="3" min="1"></div>
+        <div class="field-row ind-sub"><label>Sobreventa &lt;</label><input type="number" id="stoch_oversold" value="20" min="0" max="100"></div>
+        <div class="field-row ind-sub"><label>Sobrecompra &gt;</label><input type="number" id="stoch_overbought" value="80" min="0" max="100"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="ao_enabled"> Awesome Oscillator</label></h3>
+        <div class="field-row ind-sub"><label>Rápida</label><input type="number" id="ao_fast" value="5" min="1"></div>
+        <div class="field-row ind-sub"><label>Lenta</label><input type="number" id="ao_slow" value="34" min="1"></div>
+        <p class="module-hint">Extremo: dispara en el cruce del cero.</p>
+      </section>
+      </div>
+
+      <div class="family-group">
+        <h4 class="family-title">Volatilidad <span class="family-tag">canales y rangos de precio</span></h4>
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="bb_enabled" checked> Bandas de Bollinger</label></h3>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="bb_period" value="20" min="2"></div>
+        <div class="field-row ind-sub"><label>Desviaciones (σ)</label><input type="number" id="bb_std" value="2.0" step="0.1" min="0.1"></div>
+      </section>
+
+      <section class="module">
+        <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="keltner_enabled"> Keltner Channels</label></h3>
+        <div class="field-row ind-sub"><label>Periodo</label><input type="number" id="keltner_period" value="20" min="1"></div>
+        <div class="field-row ind-sub"><label>Multiplicador ATR</label><input type="number" id="keltner_mult" value="2.0" step="0.1" min="0.1"></div>
+        <p class="module-hint">Extremo: precio tocando el canal, igual que Bollinger.</p>
+      </section>
+      </div>
+
+      <div class="family-group">
+        <h4 class="family-title">Patrones <span class="family-tag">figuras de precio</span></h4>
+      <section class="module">
         <h3 class="module-title"><label class="module-toggle"><input type="checkbox" id="fractals_enabled"> Fractales</label></h3>
         <p class="module-hint">Extremo: fractal de 5 velas confirmado (la señal se corre 2 velas para no "ver el futuro"). Sin parámetros.</p>
       </section>
+      </div>
+
+
+
+      
+
+      
+
+      
+
+      
+
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
 
       <section class="module">
         <h3 class="module-title">Confirmacion &amp; salida</h3>
@@ -191,6 +231,7 @@
         <div class="save-row">
           <input type="text" id="strategyName" placeholder="Nombre de la estrategia (ej: Smith agresiva)">
           <button id="saveStrategyBtn" class="btn btn-ghost">Guardar estrategia</button>
+          <label class="archived-check"><input type="checkbox" id="strategy_archived"> Archivada (no aparece en Operar)</label>
           <input type="text" id="backtestName" placeholder="Nombre de este backtest (ej: EURUSD 1m v3)">
           <button id="saveBacktestBtn" class="btn btn-accent">Guardar backtest</button>
         </div>

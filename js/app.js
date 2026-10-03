@@ -131,7 +131,8 @@ function syncModuleToggles() {
 }
 TOGGLE_MODULES.forEach((id) => $(id).addEventListener("change", syncModuleToggles));
 
-const NEW_INDICATOR_TOGGLES = ["psar_enabled", "adx_enabled", "macd_enabled", "ichimoku_enabled",
+const NEW_INDICATOR_TOGGLES = ["bb_enabled", "rsi_enabled", "cci_enabled", "stoch_enabled", "ma_enabled",
+  "psar_enabled", "adx_enabled", "macd_enabled", "ichimoku_enabled",
   "ao_enabled", "keltner_enabled", "alligator_enabled", "fractals_enabled"];
 
 function syncNewIndicatorVisibility() {
@@ -441,6 +442,7 @@ $("saveStrategyBtn").addEventListener("click", async () => {
     strategy: readStrategyConfig(),
     money: readMoneyConfig(),
     expiry_candles: Number($("expiry_candles").value),
+    archived: $("strategy_archived").checked,
     created_at: new Date().toISOString(),
   };
   await dbPut("strategies", item);
@@ -477,10 +479,11 @@ async function renderStrategiesList() {
   }
   strategies.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   el.innerHTML = strategies.map((s) => {
-    const activeIndicators = ["bb", "rsi", "cci", "stoch", "ma"].filter((k) => s.strategy[`${k}_enabled`]);
+    const activeIndicators = ["bb", "rsi", "cci", "stoch", "ma", "psar", "adx", "macd",
+      "ichimoku", "ao", "keltner", "alligator", "fractals"].filter((k) => s.strategy[`${k}_enabled`]);
     return `
-    <div class="lib-card">
-      <div class="lib-card-top"><span class="lib-card-name">${s.name}</span><span class="lib-card-date">${fmtDate(s.created_at)}</span></div>
+    <div class="lib-card${s.archived ? " archived" : ""}">
+      <div class="lib-card-top"><span class="lib-card-name">${s.name}</span>${s.archived ? '<span class="badge-archived">Archivada</span>' : ""}<span class="lib-card-date">${fmtDate(s.created_at)}</span></div>
       <div class="lib-card-meta">Indicadores: <b>${activeIndicators.join(", ").toUpperCase() || "ninguno"}</b><br>Vencimiento: <b>${s.expiry_candles} velas</b></div>
       <div class="lib-card-actions">
         <button data-action="load-strategy" data-id="${s.id}">Cargar en Backtest</button>
@@ -496,6 +499,8 @@ async function renderStrategiesList() {
       writeMoneyConfig(s.money);
       $("expiry_candles").value = s.expiry_candles;
       $("strategyName").value = s.name;
+      $("strategy_archived").checked = !!s.archived;
+      syncNewIndicatorVisibility();
       document.querySelector('.tab-btn[data-tab="backtest"]').click();
       toast(`Estrategia "${s.name}" cargada en la pestaña Backtest.`);
     });
@@ -758,7 +763,7 @@ function updateLiveModeUI() {
 updateLiveModeUI();
 
 async function populateLiveStrategySelect() {
-  const strategies = await dbGetAll("strategies");
+  const strategies = (await dbGetAll("strategies")).filter((s) => !s.archived);
   const sel = $("liveStrategySelect");
   sel.innerHTML = `<option value="">— Seleccioná una estrategia —</option>` +
     strategies.map((s) => `<option value="${s.id}">${s.name}</option>`).join("");

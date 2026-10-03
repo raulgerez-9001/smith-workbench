@@ -652,3 +652,173 @@ td.loss { color: var(--put); }
 }
 #tab-backtest .params-panel { overflow-y: auto; }
 #tab-backtest .results-panel { overflow-y: auto; }
+
+/* =========================================================================
+   REDISEÑO entrega3 — UI más amigable (tipografía, tarjetas, botones,
+   transiciones, familias de indicadores, responsive)
+   ========================================================================= */
+:root {
+  --radius: 12px;
+  --radius-lg: 16px;
+  --font-base: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .30);
+  --shadow-lg: 0 10px 32px rgba(0, 0, 0, .38);
+  --ease: cubic-bezier(.22, .8, .3, 1);
+}
+
+body { font-family: var(--font-base); letter-spacing: .1px; }
+
+/* ---- topbar: translúcido con blur ---- */
+.topbar {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(12, 15, 23, .82);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- pestañas: transición suave ---- */
+.tabs { gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  border-radius: 999px;
+  padding: 8px 18px;
+  transition: all .22s var(--ease);
+}
+.tab-btn:hover { color: var(--text); background: rgba(240, 165, 0, .08); }
+.tab-btn.active { box-shadow: 0 2px 10px rgba(240, 165, 0, .28); }
+
+/* ---- botones: píldora, elevación al pasar ---- */
+.btn {
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  transition: transform .16s var(--ease), box-shadow .22s var(--ease), filter .2s var(--ease);
+}
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn:active { transform: translateY(0) scale(.98); }
+.btn-accent {
+  background: linear-gradient(135deg, #f7b733, #f0a500 55%, #e69500);
+  border: none;
+  color: #1a1206;
+  box-shadow: 0 2px 10px rgba(240, 165, 0, .30);
+}
+.btn-accent:hover { filter: brightness(1.07); box-shadow: 0 6px 18px rgba(240, 165, 0, .40); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* acciones dentro de tarjetas */
+.lib-card-actions button, .project-card-actions button {
+  border-radius: 999px;
+  font-weight: 600;
+  transition: all .18s var(--ease);
+}
+.lib-card-actions button:hover, .project-card-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- tarjetas: bordes suaves, sombra y elevación ---- */
+.lib-card, .project-card, .metric-card, .upload-box, .module, .panel, .data-shell {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.lib-card, .project-card { transition: transform .2s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease); }
+.lib-card:hover, .project-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(240, 165, 0, .35); }
+.lib-card.archived { opacity: .55; }
+.lib-card.archived:hover { opacity: .85; }
+.badge-archived {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text-muted); border: 1px solid var(--border);
+  padding: 2px 8px; border-radius: 999px; margin-right: 8px;
+}
+.metric-card { transition: transform .18s var(--ease), box-shadow .2s var(--ease); }
+.metric-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.metric-value { font-family: var(--font-base); font-weight: 700; }
+
+/* ---- módulos ---- */
+.module { padding: 14px 14px 12px; }
+.module-title { letter-spacing: .3px; }
+.module-toggle { cursor: pointer; user-select: none; }
+
+/* ---- familias de indicadores ---- */
+.family-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px 12px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, .015);
+}
+.family-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--accent);
+  margin: 2px 2px 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.family-tag {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: .2px;
+  color: var(--text-faint);
+}
+.family-tip {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  background: rgba(240, 165, 0, .07);
+  border: 1px dashed rgba(240, 165, 0, .30);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  margin: 0 0 12px;
+}
+
+/* ---- campos: foco visible ---- */
+input[type="text"], input[type="password"], input[type="number"], select {
+  border-radius: 10px;
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(240, 165, 0, .16);
+}
+input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.archived-check {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted); cursor: pointer; margin-left: 10px;
+}
+.btn:focus-visible, .tab-btn:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- toast: entrada animada ---- */
+.toast { border-radius: 12px; box-shadow: var(--shadow-lg); }
+.toast:not(.hidden) { animation: toastIn .28s var(--ease); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 14px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ---- barras de scroll discretas ---- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .10); border-radius: 999px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .20); }
+
+/* ---- responsivo: celular más cómodo ---- */
+@media (max-width: 760px) {
+  .topbar { padding: 10px 12px; }
+  .brand-text { font-size: 15px; }
+  .brand-sub { display: none; }
+  .tab-btn { padding: 7px 12px; font-size: 12.5px; }
+  #tab-backtest .layout { grid-template-columns: 1fr; height: auto; overflow: visible; }
+  #tab-backtest .params-panel, #tab-backtest .results-panel { overflow-y: visible; }
+  .lib-card:hover, .project-card:hover { transform: none; }
+  .layout { padding: 12px 12px 28px !important; }
+}
