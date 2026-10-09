@@ -633,6 +633,7 @@ function getBackendCfg() {
     token: localStorage.getItem("smith_backend_token") || "",
     iqEmail: localStorage.getItem("smith_iq_email") || "",
     iqPassword: localStorage.getItem("smith_iq_password") || "",
+    iqMcpToken: localStorage.getItem("smith_iq_mcp") || "",
   };
 }
 
@@ -642,6 +643,7 @@ function loadBackendCfgIntoForm() {
   $("backendTokenInput").value = cfg.token;
   $("iqEmailInput").value = cfg.iqEmail;
   $("iqPasswordInput").value = cfg.iqPassword;
+  if ($("iqMcpToken")) $("iqMcpToken").value = cfg.iqMcpToken || "";
   $("backendStatus").textContent = cfg.url ? "configurado" : "sin configurar";
 }
 
@@ -652,6 +654,7 @@ $("saveBackendCfgBtn").addEventListener("click", async () => {
   localStorage.setItem("smith_backend_token", token);
   localStorage.setItem("smith_iq_email", $("iqEmailInput").value.trim());
   localStorage.setItem("smith_iq_password", $("iqPasswordInput").value);
+  localStorage.setItem("smith_iq_mcp", $("iqMcpToken").value.trim());
   $("backendStatus").textContent = url ? "configurado" : "sin configurar";
   toast("Configuración guardada.");
   await renderServerDatasetsList();
@@ -798,6 +801,7 @@ $("liveStartBtn").addEventListener("click", async () => {
     const cfg = getBackendCfg();
     body.email = cfg.iqEmail;
     body.password = cfg.iqPassword;
+    if (cfg.iqMcpToken) body.iq_token = cfg.iqMcpToken;
     if (!body.email || !body.password) {
       toast("Guardá tu usuario y contraseña de IQ Option en ⚙ Configuración (pestaña Datos) primero.", true);
       return;
